@@ -58,24 +58,33 @@ class Classifier:
 		self.uclf = MultinomialNB().fit(X_train_counts_u, self.train_target)
 		self.bclf = MultinomialNB().fit(X_train_counts_b, self.train_target)
 
-	def get_result_nb(self):
+	def get_result(self):
 		X_test_counts_u = self.unigram_count_vect.transform(self.test_data)
 		X_test_counts_b = self.bigram_count_vect.transform(self.test_data)
 		upredicted = self.uclf.predict(X_test_counts_u)
 		bpredicted = self.bclf.predict(X_test_counts_b)
-		print(metrics.classification_report(self.test_target, upredicted, target_names=self.target_names))
+		#print(metrics.classification_report(self.test_target, upredicted, target_names=self.target_names))
 		print(metrics.precision_score(self.test_target, upredicted, average='macro'))
 		print(metrics.recall_score(self.test_target, upredicted, average='macro'))
 		print(metrics.f1_score(self.test_target, upredicted, average='macro'))
 
-		print(metrics.classification_report(self.test_target, bpredicted, target_names=self.target_names))
+		#print(metrics.classification_report(self.test_target, bpredicted, target_names=self.target_names))
 		print(metrics.precision_score(self.test_target, bpredicted, average='macro'))
 		print(metrics.recall_score(self.test_target, upredicted, average='macro'))
 		print(metrics.f1_score(self.test_target, bpredicted, average='macro'))
 
+	def train_svm(self):
+		self.unigram_count_vect = CountVectorizer()
+		self.bigram_count_vect = CountVectorizer(ngram_range=(2, 2))
+		X_train_counts_u = self.unigram_count_vect.fit_transform(self.train_data)
+		X_train_counts_b = self.bigram_count_vect.fit_transform(self.train_data)
+		self.uclf = SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42).fit(X_train_counts_u, self.train_target)
+		self.bclf = SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42).fit(X_train_counts_b, self.train_target)
 
 if __name__ == '__main__':
 	categories = ['rec.sport.hockey','sci.med','soc.religion.christian','talk.religion.misc']
 	cla = Classifier(categories)
 	cla.train_nb()
-	cla.get_result_nb()
+	cla.get_result()
+	cla.train_svm()
+	cla.get_result()
