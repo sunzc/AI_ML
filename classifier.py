@@ -6,7 +6,9 @@
 import os
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 
 class Classifier:
@@ -63,12 +65,12 @@ class Classifier:
 		X_test_counts_b = self.bigram_count_vect.transform(self.test_data)
 		upredicted = self.uclf.predict(X_test_counts_u)
 		bpredicted = self.bclf.predict(X_test_counts_b)
-		#print(metrics.classification_report(self.test_target, upredicted, target_names=self.target_names))
+		print(metrics.classification_report(self.test_target, upredicted, target_names=self.target_names))
 		print(metrics.precision_score(self.test_target, upredicted, average='macro'))
 		print(metrics.recall_score(self.test_target, upredicted, average='macro'))
 		print(metrics.f1_score(self.test_target, upredicted, average='macro'))
 
-		#print(metrics.classification_report(self.test_target, bpredicted, target_names=self.target_names))
+		print(metrics.classification_report(self.test_target, bpredicted, target_names=self.target_names))
 		print(metrics.precision_score(self.test_target, bpredicted, average='macro'))
 		print(metrics.recall_score(self.test_target, upredicted, average='macro'))
 		print(metrics.f1_score(self.test_target, bpredicted, average='macro'))
@@ -81,10 +83,30 @@ class Classifier:
 		self.uclf = SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42).fit(X_train_counts_u, self.train_target)
 		self.bclf = SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42).fit(X_train_counts_b, self.train_target)
 
+	def train_lr(self):
+		self.unigram_count_vect = CountVectorizer()
+		self.bigram_count_vect = CountVectorizer(ngram_range=(2, 2))
+		X_u = self.unigram_count_vect.fit_transform(self.train_data)
+		X_b = self.bigram_count_vect.fit_transform(self.train_data)
+		self.uclf = LogisticRegression(C = 100, penalty='l2',tol = 0.01).fit(X_u, self.train_target)
+		self.bclf = LogisticRegression(C = 100, penalty='l2',tol = 0.01).fit(X_b, self.train_target)
+
+	def train_rf(self):
+		self.unigram_count_vect = CountVectorizer()
+		self.bigram_count_vect = CountVectorizer(ngram_range=(2, 2))
+		X_u = self.unigram_count_vect.fit_transform(self.train_data)
+		X_b = self.bigram_count_vect.fit_transform(self.train_data)
+		self.uclf = RandomForestClassifier(n_estimators=10, max_depth=None,min_samples_split=2, random_state=0).fit(X_u, self.train_target)
+		self.bclf = RandomForestClassifier(n_estimators=10, max_depth=None,min_samples_split=2, random_state=0).fit(X_b, self.train_target)
+
 if __name__ == '__main__':
 	categories = ['rec.sport.hockey','sci.med','soc.religion.christian','talk.religion.misc']
 	cla = Classifier(categories)
 	cla.train_nb()
 	cla.get_result()
 	cla.train_svm()
+	cla.get_result()
+	cla.train_lr()
+	cla.get_result()
+	cla.train_rf()
 	cla.get_result()
