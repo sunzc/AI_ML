@@ -9,6 +9,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 import matplotlib.pyplot as plt
@@ -108,12 +109,16 @@ class Classifier:
 
 		self.unigram_count_vect = CountVectorizer()
 		X_u = self.unigram_count_vect.fit_transform(self.train_data[:bound])
-		self.uclf = SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42).fit(X_u, self.train_target[:bound])
+		self.uclf = SVC(kernel='linear', class_weight='balanced')
+		self.uclf.fit(X_u, self.train_target[:bound])
+		#self.uclf = SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42).fit(X_u, self.train_target[:bound])
 
 		if not unigram_only:
 			self.bigram_count_vect = CountVectorizer(ngram_range=(2, 2))
 			X_b = self.bigram_count_vect.fit_transform(self.train_data[:bound])
-			self.bclf = SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42).fit(X_b, self.train_target[:bound])
+			self.bclf = SVC(kernel='linear', class_weight='balanced')
+			self.bclf.fit(X_b, self.train_target[:bound])
+			#self.bclf = SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, n_iter=5, random_state=42).fit(X_b, self.train_target[:bound])
 
 	def train_lr(self, percent, unigram_only):
 		bound = int(len(self.train_data)/100) * percent
@@ -235,4 +240,4 @@ if __name__ == '__main__':
 	categories = ['rec.sport.hockey','sci.med','soc.religion.christian','talk.religion.misc']
 	cla = Classifier(categories)
 	cla.get_performance_table()
-	#cla.draw_learning_curve()
+	cla.draw_learning_curve()
