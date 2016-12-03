@@ -6,6 +6,7 @@
 import os
 import sys
 import random
+import pickle
 from time import time
 from sklearn.model_selection import GridSearchCV
 from sklearn.feature_extraction.text import CountVectorizer
@@ -248,16 +249,49 @@ class Classifier:
 				j += 1
 			i += 1
 
+	def do_predict(self, subset):
+		perf_table = []
+		cla_names = []
+
+		self.test_data, self.test_target = self.get_data_target(self.target_names, subset, True)
+
+		res = self.get_result(False)
+		perf_table.append(res)
+		cla_names.append("Naive Bayes")
+
+		i = 0
+		conf_names = ["Unigram Baselines", "Bigram Baselines"]
+		perf_names = ["Precision Score", "   Recall Score", "       F1 Score"]
+		for res in perf_table:
+			print(cla_names[i])
+			j = 0
+			for conf in res:
+				print("    " + conf_names[j])
+				k = 0
+				for score in conf:
+					print("    " + "    " + perf_names[k] + ":" + str(score))
+					k += 1
+				j += 1
+			i += 1
+
+
 if __name__ == '__main__':
 	categories = ['rec.sport.hockey','sci.med','soc.religion.christian','talk.religion.misc']
 	if len(sys.argv) == 2:
 		subset = sys.argv[1]
 	else:
-		print("./mbc.py subset_name")
+		print("Usage:")
+		print("\t./mbc.py subset_name")
 		exit(1)
 
-	best_cla = Classifier(categories, use_stemmer=True, subset=subset)
-	best_cla.get_performance_table(use_tfidf=False, use_stopwords=True, select_feature=False)
+	try:
+		best_cla = pickle.load(open( "best_cla.p", "rb" ))
+		best_cla.do_predict(subset)
+	except:
+		best_cla = Classifier(categories, use_stemmer=True, subset=subset)
+		best_cla.get_performance_table(use_tfidf=False, use_stopwords=True, select_feature=False)
+		pickle.dump(best_cla, open( "best_cla.p", "wb" ))
+
 	#stemmer_array = [True, False]
 	#stopwords_array = [True, False]
 	#tfidf_array = [True, False]
