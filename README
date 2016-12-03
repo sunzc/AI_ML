@@ -1,1 +1,17 @@
 ref:http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html
+To test the best configuration on new test data, please put your new_data under the directory data/ . Currently, there are two subset under data/, they are:
+data/
+	Training/
+	Judge/
+	Test/
+
+If you copy your new_test_data under data/ , it will looks like this:
+data/
+	Training/
+	Judge/
+	Test/
+	new_test_data/
+
+
+If you want to test MBC on this new data, please run:
+./mba.py   new_test_data
